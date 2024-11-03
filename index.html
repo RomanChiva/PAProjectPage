@@ -123,15 +123,20 @@
 </section>
 
 
-<!-- Teaser video-->
+<!-- Teaser video -->
 <section class="hero teaser">
   <div class="container is-max-desktop">
     <div class="hero-body">
-      <video poster="" id="tree" autoplay controls muted loop height="100%">
-        <!-- Your video here -->
-        <source src="static/videos/banner_video.mp4"
-        type="video/mp4">
-      </video>
+      <div class="video-container">
+        <video poster="" id="tree1" autoplay controls muted loop>
+          <!-- First video here -->
+          <source src="static/videos/banner_video.mp4" type="video/mp4">
+        </video>
+        <video poster="" id="tree2" autoplay controls muted loop>
+          <!-- Second video here -->
+          <source src="static/videos/banner_video.mp4" type="video/mp4">
+        </video>
+      </div>
       <h2 class="subtitle has-text-centered">
         Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
       </h2>
@@ -139,6 +144,27 @@
   </div>
 </section>
 <!-- End teaser video -->
+
+<style>
+  .video-container {
+    display: flex;
+    gap: 1rem;
+  }
+  .video-container video {
+    width: 50%;
+    height: auto;
+  }
+
+  /* Optional: Make the videos stack on smaller screens */
+  @media (max-width: 768px) {
+    .video-container {
+      flex-direction: column;
+    }
+    .video-container video {
+      width: 100%;
+    }
+  }
+</style>
 
 <!-- Paper abstract -->
 <section class="section hero is-light">
@@ -148,7 +174,32 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ullamcorper tellus sed ante aliquam tempus. Etiam porttitor urna feugiat nibh elementum, et tempor dolor mattis. Donec accumsan enim augue, a vulputate nisi sodales sit amet. Proin bibendum ex eget mauris cursus euismod nec et nibh. Maecenas ac gravida ante, nec cursus dui. Vivamus purus nibh, placerat ac purus eget, sagittis vestibulum metus. Sed vestibulum bibendum lectus gravida commodo. Pellentesque auctor leo vitae sagittis suscipit.
+            To safely and efficiently solve motion planning problems in multi-
+agent settings, most approaches attempt to solve a joint optimiza-
+tion that explicitly accounts for the responses triggered in other
+agents. This often results in solutions with an exponential compu-
+tational complexity, making these methods intractable for complex
+scenarios with many agents. While sequential predict-and-plan ap-
+proaches are more scalable, they tend to perform poorly in highly
+interactive environments. This paper proposes a method to improve
+the interactive capabilities of sequential predict-and-plan methods
+in multi-agent navigation problems by introducing predictability
+as an optimization objective. We interpret predictability through
+the use of general prediction models, by allowing agents to predict
+themselves and estimate how they align with these external predic-
+tions. We formally introduce this behavior through the free-energy
+of the system, which reduces (under appropriate bounds) to the
+Kullback-Leibler divergence between plan and prediction, and use
+this as a penalty for unpredictable trajectories. The proposed inter-
+pretation of predictability allows agents to more robustly leverage
+prediction models, and fosters a ‘soft social convention’ that accel-
+erates agreement on coordination strategies without the need of
+explicit high level control or communication. We show how this
+predictability-aware planning leads to lower-cost trajectories and
+reduces planning effort in a set of multi-robot problems, including
+autonomous driving experiments with human driver data, where
+we show that the benefits of considering predictability apply even
+when only the ego-agent uses this strategy.
           </p>
         </div>
       </div>
