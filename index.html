@@ -141,7 +141,11 @@
         </video>
       </div>
       <h2 class="subtitle has-text-centered">
-        Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
+        Figure shows the results of a swapping task for predictability weights \( \lambda=0  \) and \( \lambda=5 \) to the left and right respectively. 
+        Solving a swapping task requires agents to coordinate on a passing side. Sequential planning agents don't account for how their actions impact other agents beliefs.
+        On the other hand, agents that account for predictability use a prediction model to approximate each other's beliefs and modify their trajectories to avoid surprising others.
+        In this manner the prediction model fosters a 'soft social convention', which uniformly biases one of the passing sides accross all agents. From the perspective of an agent this results in reduced uncertainty about the environment (more accurate predictions), facilitating coordination.
+
       </h2>
     </div>
   </div>
@@ -177,14 +181,12 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified" style="font-size: 1.1em;">
           <p>
-            To safely and efficiently solve motion planning problems in multi-
-agent settings, most approaches attempt to solve a joint optimization that explicitly accounts for the responses triggered in other
+            To safely and efficiently solve motion planning problems in multi-agent settings, most approaches attempt to solve a joint optimization that explicitly accounts for the responses triggered in other
 agents. This often results in solutions with an exponential computational complexity, making these methods intractable for complex
 scenarios with many agents. While sequential predict-and-plan approaches are more scalable, they tend to perform poorly in highly
 interactive environments. This paper proposes a method to improve
 the interactive capabilities of sequential predict-and-plan methods
-in multi-agent navigation problems by introducing predictability
-as an optimization objective. We interpret predictability through
+in multi-agent navigation problems by introducing predictability as an optimization objective. We interpret predictability through
 the use of general prediction models, by allowing agents to predict
 themselves and estimate how they align with these external predictions. We formally introduce this behavior through the free-energy
 of the system, which reduces (under appropriate bounds) to the
@@ -205,107 +207,154 @@ when only the ego-agent uses this strategy.
 </section>
 <!-- End paper abstract -->
 
-
-
 <!-- Collapsible Methodology Section -->
-<section class="collapsible-section">
-  <div class="toggle-header" onclick="toggleContent()">
-    <h1 style="display: inline; font-size: 1.5em;">Methodology</h1>
-    <span id="toggle-arrow" style="font-size: 1.5em; margin-left: 10px;">&#9654;</span>
-  </div>
-  <div id="methodology-content" style="display: none; line-height: 1.8; font-size: 1.1em; max-width: 800px; margin: auto; text-align: left;">
-    <p style="margin-bottom: 20px;">
-      The methodology presented in this paper focuses on enhancing multi-agent coordination by incorporating predictability as a key objective in trajectory planning. The core idea is to adjust agents' trajectories based on the expected responses of other agents, fostering a more predictable and coordinated movement. This is achieved through the concept of "free energy," a measure inspired by active inference frameworks, which helps quantify the alignment between an agent’s planned trajectory and the expectations of other agents.
-    </p>
-    <h3 style="font-size: 1.3em; margin-top: 30px; margin-bottom: 15px;">Trajectory Planning Formulation</h3>
-    <p style="margin-bottom: 20px;">
-      The trajectory planning problem for a single agent is formulated as an optimization problem:
-    </p>
-    <div style="margin-bottom: 20px;">
-      \[
-      \min_{\mathbf{u} \in U, \mathbf{x} \in X} \sum_{k=0}^{K-1} J_k(\mathbf{x}_k, \mathbf{u}_k) + J_K(\mathbf{x}_K)
-      \]
+<section class="section collapsible-section">
+  <div class="container" style="text-align: center;">
+    <div class="toggle-header" onclick="toggleMethodologyContent()">
+      <span id="methodology-toggle-arrow" style="font-size: 1.5em; margin-left: 10px;">&#9654;</span>
+      <h2 style="display: inline; font-size: 1.5em;"><strong> Methodology</strong></h2>
     </div>
-    <p>subject to:</p>
-    <div style="margin-bottom: 20px;">
-      \[
-      \mathbf{x}_0 = \mathbf{x}_{\text{init}}, 
-      \]
-    </div>
-    <div style="margin-bottom: 20px;">
-      \[
-      \mathbf{x}_{k+1} = f(\mathbf{x}_k, \mathbf{u}_k), \quad k = 0, \dots, K-1,
-      \]
-    </div>
-    <div style="margin-bottom: 20px;">
-      \[
-      P \left[ C(\mathbf{x}_k, \delta_{o_k}), \forall o \right] \geq 1 - \epsilon_k, \quad \forall k.
-      \]
-    </div>
-    <p style="margin-bottom: 20px;">
-      where:
-    </p>
-    <ul style="margin-left: 20px; margin-bottom: 30px; font-size: 1.1em; list-style: none; padding: 0;">
-      <li>• \( \mathbf{u} = \{\mathbf{u}_0, \dots, \mathbf{u}_K\} \) represents the control inputs,</li>
-      <li>• \( \mathbf{x}_k \) denotes the robot states, and</li>
-      <li>• \( J_k(\mathbf{x}_k, \mathbf{u}_k) \) is the stage cost function for performance metrics,</li>
-      <li>• \( C(\cdot) \) denotes collision avoidance constraints, and \( \delta_{o_k} \) accounts for the uncertainty in other agents' positions.</li>
-    </ul>
-    <p style="margin-bottom: 30px;">
-      This formulation ensures that the probability of collision remains below a specified threshold \( \epsilon_k \) at each timestep.
-    </p>
+    <div id="methodology-content" style="display: none; line-height: 1.8; font-size: 1.1em; max-width: 800px; margin: auto; text-align: left;">
+      <p style="margin-bottom: 20px;">
+        Our objective is to develop a framework that allows agents to trade-off predictability with progress toward the goal. Our motivation is that by accounting for predictability a group of agents can reduce uncertainty in the environment and implicitly induce decentralized coordination. Additionally, accounting for predictability can serve as a means to ‘robustify’ a prediction model a-posteriori, where agents modify their behavior to match the prediction distribution widening the space of suitable prediction models for a given problem.
+      </p>
+      <p style="margin-bottom: 20px;">
+        Incorporating predictability in this manner parallels the principle of free-energy minimization found in active inference and control systems. Here, agents do not solely pursue reward maximization, they also seek to minimize the discrepancy between their internal prediction models and actual observations. Within multi-agent interactions, each agent maintains probabilistic beliefs about the actions of others, with the accuracy of these beliefs directly influenced by its own behavior. Through the minimization of free energy, an agent can optimize actions that both reduce environmental uncertainty and validate its internal model, while simultaneously working towards reward maximization. This method ensures that agents act in a manner that is not only goal-oriented but also supportive of maintaining coherent, accurate beliefs about the behavior of surrounding agents. Given the interdependence of trajectories in multi-agent interactions, a prediction distribution about surrounding agents is conditional on an a trajectory distribution for the ego agent. If the ego significantly deviates from this distribution, this will comromise predictions for surrounding agents. 
+      </p>
+      <p style="margin-bottom: 20px;">
+        Accordingly, we introduce a free-energy term in our derivation and establish a set of transformations that enable its use as an objective function in planning. This formulation provides a structured approach for balancing predictability with progress in multi-agent systems.
+      </p>
+      
+      <!-- Trajectory Planning Formulation -->
+      <h2 style="font-size: 1.3em; margin-top: 30px; margin-bottom: 15px;"><strong>Trajectory Planning Formulation</h2></strong>
+      <p style="margin-bottom: 20px;">
+        The trajectory planning problem for a single agent is formulated as the following optimization problem:
+      </p>
+      <div style="margin-bottom: 20px;">
+        \[
+        \min_{\mathbf{u} \in U, \mathbf{x} \in X} \sum_{k=0}^{K-1} J_k(\mathbf{x}_k, \mathbf{u}_k) + J_K(\mathbf{x}_K)
+        \]
+      </div>
+      <p>subject to:</p>
+      <div style="margin-bottom: 20px;">
+        \[
+        \mathbf{x}_0 = \mathbf{x}_{\text{init}}, 
+        \]
+      </div>
+      <div style="margin-bottom: 20px;">
+        \[
+        \mathbf{x}_{k+1} = f(\mathbf{x}_k, \mathbf{u}_k), \quad k = 0, \dots, K-1,
+        \]
+      </div>
+      <div style="margin-bottom: 20px;">
+        \[
+        P \left[ C(\mathbf{x}_k, \delta_{o_k}), \forall o \right] \geq 1 - \epsilon_k, \quad \forall k.
+        \]
+      </div>
+      <p style="margin-bottom: 20px;">
+        where:
+      </p>
+      <ul style="margin-left: 20px; margin-bottom: 30px; font-size: 1.1em; list-style: none; padding: 0;">
+        <li>• \( \mathbf{u} = \{\mathbf{u}_0, \dots, \mathbf{u}_K\} \) represents the control inputs,</li>
+        <li>• \( \mathbf{x}_k \) denotes the robot states, and</li>
+        <li>• \( J_k(\mathbf{x}_k, \mathbf{u}_k) \) is the stage cost function for performance metrics,</li>
+        <li>• \( f(\cdot) \) is the state transition dynamics function,</li>
+        <li>• \( C(\cdot) \) denotes collision avoidance constraints, and \( \delta_{o_k} \) accounts for the uncertainty in other agents' positions.</li>
+      </ul>
+      <p style="margin-bottom: 30px;">
+        This formulation ensures that the probability of collision remains below a specified threshold \( \epsilon_k \) at each timestep through chance-constraints.
+      </p>
 
-    <h3 style="font-size: 1.3em; margin-top: 30px; margin-bottom: 15px;">Free Energy as a Predictability Surrogate</h3>
-    <p style="margin-bottom: 20px;">
-      To incorporate predictability, the concept of free energy \( F(S, P, \lambda) \) is introduced as a cost function:
-    </p>
-    <div style="margin-bottom: 20px;">
-      \[
-      F(S, P, \lambda) = -\lambda \log\left( \mathbb{E}_{\mathbf{x} \sim P} \left[ \exp\left(-\frac{1}{\lambda} S(\mathbf{x})\right) \right] \right)
-      \]
+      <!-- Free Energy as a Predictability Surrogate -->
+      <h3 style="font-size: 1.3em; margin-top: 30px; margin-bottom: 15px;"><strong>Free Energy as a Predictability Surrogate</strong></h3>
+      <p style="margin-bottom: 20px;">
+        Drawing inspiration from previous works, we begin by defining the free energy of a trajectory prediction distribution \( \mathcal{F}(S, P, \lambda) \) as follows:
+      </p>
+      <div style="margin-bottom: 20px;">
+        \[
+        \mathcal{F}(S, P, \lambda) = -\lambda \log\left( \mathbb{E}_{\mathbf{x} \sim P} \left[ \exp\left(-\frac{1}{\lambda} S(\mathbf{x})\right) \right] \right)
+        \]
+      </div>
+      <p style="margin-bottom: 20px;">
+        where:
+      </p>
+      <ul style="margin-left: 20px; margin-bottom: 30px; font-size: 1.1em; list-style: none; padding: 0;">
+        <li>• \( S \) is a state cost function representing the trajectory objective,</li>
+        <li>• \( P \) is a trajectory prediction distribution,</li>
+        <li>• \( \lambda \) is an inverse temperature parameter.</li>
+      </ul>
+      <p style="margin-bottom: 20px;">
+        The free energy function can be interpreted as measuing how effectively a prediction distribution \( P \) minimizes cost. 
+        Under this interpretation, to minimize the free energy an agent would behave so as to push the prediction distribution toward the 
+        optimal trajectory so as to minimize the expected cost \( \mathbb{E}_{\mathbf{x} \sim P} [S(\mathbf{x})] \) of trajectories sampled from the distribution.
+      </p>
+      <p style="margin-bottom: 20px;">
+        Applying Jensen's inequality, this free energy function can be bounded and simplified as follows:
+      </p>
+      <div style="margin-bottom: 20px;">
+        \[
+        F(S, P, \lambda) \leq \mathbb{E}_{\mathbf{x} \sim Q}[S(\mathbf{x})] + \lambda \, \text{KL}(q(\mathbf{x}) \| p(\mathbf{x})),
+        \]
+      </div>
+      <p style="margin-bottom: 20px;">
+        where \( \text{KL} \) denotes the Kullback-Leibler divergence between the agent’s distribution \( q(\mathbf{x}) \) and the predicted distribution \( p(\mathbf{x}) \). This formulation provides a cost function with two main components:
+      </p>
+      <ol style="margin-left: 20px; margin-bottom: 30px; font-size: 1.1em;">
+        <li><strong>Performance Cost</strong>: Encourages goal-oriented behavior.</li>
+        <li><strong>Predictability Cost</strong>: Penalizes deviations from expected behavior.</li>
+      </ol>
+      <p style="margin-bottom: 20px;">
+        The stage cost function for the planning problem then becomes:
+      </p>
+      <div style="margin-bottom: 30px;">
+        \[
+        J(\tau_{0:K}) = \sum_{k=0}^K J_k(\mathbf{x}_k, \mathbf{u}_k) + \lambda \, \text{KL}(q(\mathbf{x}_k) \| p(\mathbf{x}_k)),
+        \]
+      </div>
+      <p style="margin-bottom: 30px;">
+        where \( \lambda \) adjusts the weight assigned to predictability.
+      </p>
+
+      <!-- Planner Implementation -->
+      <h3 style="font-size: 1.3em; margin-top: 30px; margin-bottom: 15px;"><strong>Planner Implementation</strong></h3>
+      <p style="margin-bottom: 20px;">
+        For practical implementation, the Model Predictive Path Integral (MPPI) control method is used, allowing sampling-based trajectory optimization. MPPI computes an optimal control sequence \( \mathbf{U}^* \) as a weighted sum of sampled trajectories, each evaluated by the cost function:
+      </p>
+      <div style="margin-bottom: 20px;">
+        \[
+        w_m = \frac{1}{\eta} \exp\left(-\frac{1}{\lambda} (J_m - J_{\text{min}})\right),
+        \]
+      </div>
+      <div style="margin-bottom: 30px;">
+        \[
+        \mathbf{U}^* = \sum_{m=1}^M w_m \mathbf{U}_m,
+        \]
+      </div>
+      <p style="margin-bottom: 20px;">
+        where \( w_m \) are the importance sampling weights, \( J_m \) is the cost of each sampled trajectory, \( J_{\text{min}} \) is the minimum cost across samples, and \( \eta \) is a normalization factor.
+      </p>
+      <p style="margin-bottom: 20px;">
+        To account for prediction uncertainty over time, a discount factor \( \gamma \) is applied to the predictability cost in the horizon:
+      </p>
+      <div style="margin-bottom: 30px;">
+        \[
+        J(\tau_{0:K}) = \sum_{k=0}^K J_k(\mathbf{x}_k, \mathbf{u}_k) + \gamma^t \lambda \, \text{KL}(q(\mathbf{x}_k) \| p(\mathbf{x}_k)),
+        \]
+      </div>
+      <p style="margin-bottom: 30px;">
+        where \( \gamma \) diminishes the influence of predictability on distant future steps, emphasizing short-term predictability.
+      </p>
+      <p style="margin-bottom: 40px;">
+        This approach allows agents to plan trajectories that balance progress towards goals and predictability, fostering smoother and more coordinated multi-agent interactions.
+      </p>
     </div>
-    <p style="margin-bottom: 20px;">
-      where:
-    </p>
-    <ul style="margin-left: 20px; margin-bottom: 30px; font-size: 1.1em; list-style: none; padding: 0;">
-      <li>• \( S \) is a state cost function representing the trajectory objective,</li>
-      <li>• \( P \) is the prediction distribution for the agent's trajectory,</li>
-      <li>• \( \lambda \) is a temperature parameter controlling the trade-off between predictability and cost efficiency.</li>
-    </ul>
-    <p style="margin-bottom: 20px;">
-      Applying Jensen's inequality, this free energy function can be bounded and simplified as follows:
-    </p>
-    <div style="margin-bottom: 20px;">
-      \[
-      F(S, P, \lambda) \leq \mathbb{E}_{\mathbf{x} \sim Q}[S(\mathbf{x})] + \lambda \, \text{KL}(q(\mathbf{x}) \| p(\mathbf{x})),
-      \]
-    </div>
-    <p style="margin-bottom: 20px;">
-      where \( \text{KL} \) denotes the Kullback-Leibler divergence between the agent’s distribution \( q(\mathbf{x}) \) and the predicted distribution \( p(\mathbf{x}) \). This formulation provides a cost function with two main components:
-    </p>
-    <ol style="margin-left: 20px; margin-bottom: 30px; font-size: 1.1em;">
-      <li><strong>Performance Cost</strong>: Encourages goal-oriented behavior.</li>
-      <li><strong>Predictability Cost</strong>: Penalizes deviations from expected behavior.</li>
-    </ol>
-    <p style="margin-bottom: 20px;">
-      The stage cost function for the planning problem then becomes:
-    </p>
-    <div style="margin-bottom: 30px;">
-      \[
-      J(\tau_{0:K}) = \sum_{k=0}^K J_k(\mathbf{x}_k, \mathbf{u}_k) + \lambda \, \text{KL}(q(\mathbf{x}_k) \| p(\mathbf{x}_k)),
-      \]
-    </div>
-    <p style="margin-bottom: 30px;">
-      where \( \lambda \) adjusts the weight assigned to predictability.
-    </p>
-    <!-- Add the rest of your content here in a similar fashion -->
   </div>
 </section>
 
 <script>
-  function toggleContent() {
+  function toggleMethodologyContent() {
     const content = document.getElementById("methodology-content");
-    const arrow = document.getElementById("toggle-arrow");
+    const arrow = document.getElementById("methodology-toggle-arrow");
     if (content.style.display === "none") {
       content.style.display = "block";
       arrow.innerHTML = "&#9660;"; // Down arrow
@@ -316,36 +365,50 @@ when only the ego-agent uses this strategy.
   }
 </script>
 
+
+<!-- Collapsible Single Agent Experiments Section -->
+<section class="section">
+  <div class="container" style="text-align: center;">
+    <div class="toggle-header" onclick="toggleSingleAgentContent()">
+      <span id="single-agent-toggle-arrow" style="font-size: 1.5em;">&#9654;</span>
+      <h2 style="display: inline; font-size: 1.5em; margin-left: 8px;"><strong>Single-Agent Experiment</strong></h2>
+    </div>
+    <div id="single-agent-content" style="display: none; text-align: center;">
+      <div class="figure-container">
+        <figure>
+          <img src="static/images/Belief_evolution.svg" alt="Figure 1">
+        </figure>
+        <figure>
+          <img src="static/images/trajs.svg" alt="Figure 2">
+        </figure>
+      </div>
+      <figcaption class="shared-caption">Left figure shows that increasing 𝜆 effectively decrease the belief
+        update rate for the observer. Right figure shows the nominal trajectory, rendered
+        in red. Given the observer holds mistaken initial beliefs about the robot’s goal,
+        we observe that increasing the predictability score 𝜆 results in trajectories that
+        are more compliant with the observer’s expectation.</figcaption>
+      <p class="larger-text">
+        Text here
+      </p>
+    </div>
+  </div>
+</section>
+
 <style>
   .toggle-header {
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #333;
     margin-bottom: 10px;
   }
   .toggle-header:hover {
     color: #007bff; /* Optional: Change color on hover */
   }
-</style>
 
-
-
-<section class="section">
-  <div class="container">
-    <div class="figure-container">
-      <figure>
-        <img src="static/images/Belief_evolution.svg" alt="Figure 1">
-      </figure>
-      <figure>
-        <img src="static/images/trajs.svg" alt="Figure 2">
-      </figure>
-    </div>
-    <figcaption class="shared-caption">Figure 1 & 2: Shared caption for both figures</figcaption>
-  </div>
-</section>
-
-<style>
   .figure-container {
     display: flex;
     gap: 0; /* Ensures there is no space between the figures */
@@ -354,22 +417,29 @@ when only the ego-agent uses this strategy.
   }
 
   .figure-container figure {
-    margin: 0; /* Remove default margin */
-    padding: 0; /* Remove any default padding */
-    flex: 1 1 45%; /* Limit each figure to take up a maximum of 45% of container width */
+    margin: 0;
+    padding: 0;
+    flex: 1 1 45%;
   }
 
   .figure-container img {
-    display: block; /* Ensures no space below the images */
-    width: 100%; /* Ensures each image takes up the full width of its figure container */
-    height: auto; /* Maintain aspect ratio */
+    display: block;
+    width: 100%;
+    height: auto;
   }
 
   .shared-caption {
     text-align: center;
-    margin-top: 12px; /* Space above the caption */
-    font-style: italic; /* Optional: styling for the caption */
-    font-size: 1.1em; /* Adjust caption size if needed */
+    margin-top: 12px;
+    font-style: italic;
+    font-size: 1.1em;
+    margin-bottom: 25px;
+  }
+
+  .larger-text {
+    font-size: 1.2em; /* Increase the font size of the text */
+    margin-top: 20px; /* Add space above the text */
+    margin-bottom: 40px;
   }
 
   /* Responsive: Stack figures on small screens */
@@ -381,663 +451,625 @@ when only the ego-agent uses this strategy.
   }
 </style>
 
+<script>
+  function toggleSingleAgentContent() {
+    const content = document.getElementById("single-agent-content");
+    const arrow = document.getElementById("single-agent-toggle-arrow");
+    if (content.style.display === "none") {
+      content.style.display = "block";
+      arrow.innerHTML = "&#9660;"; // Down arrow
+    } else {
+      content.style.display = "none";
+      arrow.innerHTML = "&#9654;"; // Right arrow
+    }
+  }
+</script>
 
 
 
-
-<!-- Image grid -->
-<section class="section">
-  <div class="container is-max-desktop">
-    <div class="columns is-multiline is-centered">
-      <div class="column is-one-third has-text-centered">
-        <figure>
-          <img src="static/images/symmetric_lambda0.svg" alt="Image 1" width="100%" height="400px" />
-          <figcaption>Image 1 caption</figcaption>
-        </figure>
-      </div>
-      <div class="column is-one-third has-text-centered">
-        <figure>
-          <img src="static/images/asymmetric_lambda0.svg" alt="Image 2" width="100%" height="400px" />
-          <figcaption>Image 2 caption</figcaption>
-        </figure>
-      </div>
-      <div class="column is-one-third has-text-centered">
-        <figure>
-          <img src="static/images/double_crossing_lambda0.svg" alt="Image 3" width="100%" height="400px" />
-          <figcaption>Image 3 caption</figcaption>
-        </figure>
-      </div>
-      <div class="column is-one-third has-text-centered">
-        <figure>
-          <img src="static/images/symmetric_lambda5.svg" alt="Image 4" width="100%" height="400px" />
-          <figcaption>Image 4 caption</figcaption>
-        </figure>
-      </div>
-      <div class="column is-one-third has-text-centered">
-        <figure>
-          <img src="static/images/asymmetric_lambda5.svg" alt="Image 5" width="100%" height="400px" />
-          <figcaption>Image 5 caption</figcaption>
-        </figure>
-      </div>
-      <div class="column is-one-third has-text-centered">
-        <figure>
-          <img src="static/images/double_crossing_lambda5.svg" alt="Image 6" width="100%" height="400px" />
-          <figcaption>Image 6 caption</figcaption>
-        </figure>
-      </div>
-    </div>
-    <div class="has-text-centered">
-      <p>Common caption for all figures</p>
-    </div>
-  </div>
-</section>
-
-
+<!-- Collapsible Results Section -->
 <section class="section">
   <div class="container">
-    <h2 class="title is-4 has-text-centered">Table summarizing results for the 3 swapping tasks: Symmetrical, Unsymmetrical, and Double-Crossing</h2>
-    <table class="table is-bordered is-striped is-fullwidth">
-      <thead>
-        <tr>
-          <th>Exp.</th>
-          <th>Metric</th>
-          <th>&lambda; = 0.0</th>
-          <th>&lambda; = 2.5</th>
-          <th>&lambda; = 5.0</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td rowspan="3">Sym</td>
-          <td>PE (m²)</td>
-          <td>2.116 <small>&plusmn; 1.000</small></td>
-          <td>0.516 <small>&plusmn; 0.161</small></td>
-          <td><strong>0.501</strong> <small>&plusmn; <strong>0.145</strong></small></td>
-        </tr>
-        <tr>
-          <td>Acc (m/s²)</td>
-          <td>0.209 <small>&plusmn; 0.101</small></td>
-          <td><strong>0.038</strong> <small>&plusmn; <strong>0.008</strong></small></td>
-          <td>0.043 <small>&plusmn; 0.009</small></td>
-        </tr>
-        <tr>
-          <td>Ang (rad/s)</td>
-          <td>0.283 <small>&plusmn; 0.041</small></td>
-          <td>0.225 <small>&plusmn; 0.026</small></td>
-          <td><strong>0.219</strong> <small>&plusmn; <strong>0.026</strong></small></td>
-        </tr>
-        
-        <tr>
-          <td rowspan="3">Unsym</td>
-          <td>PE (m²)</td>
-          <td>0.877 <small>&plusmn; 0.489</small></td>
-          <td>0.291 <small>&plusmn; 0.178</small></td>
-          <td><strong>0.187</strong> <small>&plusmn; <strong>0.162</strong></small></td>
-        </tr>
-        <tr>
-          <td>Acc (m/s²)</td>
-          <td>0.196 <small>&plusmn; 0.114</small></td>
-          <td>0.138 <small>&plusmn; 0.090</small></td>
-          <td><strong>0.112</strong> <small>&plusmn; <strong>0.080</strong></small></td>
-        </tr>
-        <tr>
-          <td>Ang (rad/s)</td>
-          <td>0.363 <small>&plusmn; 0.112</small></td>
-          <td>0.221 <small>&plusmn; 0.095</small></td>
-          <td><strong>0.177</strong> <small>&plusmn; <strong>0.071</strong></small></td>
-        </tr>
-
-        <tr>
-          <td rowspan="3">D-Cross</td>
-          <td>PE (m²)</td>
-          <td>0.969 <small>&plusmn; 0.416</small></td>
-          <td>0.388 <small>&plusmn; 0.124</small></td>
-          <td><strong>0.311</strong> <small>&plusmn; <strong>0.116</strong></small></td>
-        </tr>
-        <tr>
-          <td>Acc (m/s²)</td>
-          <td>0.249 <small>&plusmn; 0.124</small></td>
-          <td><strong>0.123</strong> <small>&plusmn; <strong>0.080</strong></small></td>
-          <td>0.125 <small>&plusmn; 0.070</small></td>
-        </tr>
-        <tr>
-          <td>Ang (rad/s)</td>
-          <td>0.434 <small>&plusmn; 0.128</small></td>
-          <td>0.283 <small>&plusmn; 0.096</small></td>
-          <td><strong>0.252</strong> <small>&plusmn; <strong>0.078</strong></small></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-
-<!-- Teaser video -->
-<section class="hero teaser">
-  <div class="container is-max-desktop">
-    <div class="hero-body">
-      <div class="video-container">
-        <video poster="" id="tree1" autoplay controls muted loop>
-          <!-- First video here -->
-          <source src="static/videos/cropped_T_Junction_Deadlock.mp4" type="video/mp4">
-        </video>
-        <video poster="" id="tree2" autoplay controls muted loop>
-          <!-- Second video here -->
-          <source src="static/videos/cropped_MPPI_Deadlock_Avoid.mp4" type="video/mp4">
-        </video>
-      </div>
-      <h2 class="subtitle has-text-centered">
-        Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
-      </h2>
+    <div class="toggle-header" onclick="toggleResultsContent()">
+      <span id="results-toggle-arrow" style="font-size: 1.5em; margin-left: 10px;">&#9654;</span>
+      <h2 style="display: inline; font-size: 1.5em;"><strong>Swapping Tasks</strong></h2>
     </div>
-  </div>
-</section>
-<!-- End teaser video -->
-
-<style>
-  .video-container {
-    display: flex;
-    gap: 1rem;
-  }
-  .video-container video {
-    width: 50%;
-    height: auto;
-  }
-
-  /* Optional: Make the videos stack on smaller screens */
-  @media (max-width: 768px) {
-    .video-container {
-      flex-direction: column;
-    }
-    .video-container video {
-      width: 100%;
-    }
-  }
-</style>
-
-<!-- Teaser video -->
-<section class="hero teaser">
-  <div class="container is-max-desktop">
-    <div class="hero-body">
-      <div class="video-container">
-        <video poster="" id="tree1" autoplay controls muted loop>
-          <!-- First video here -->
-          <source src="static/videos/cropped_LaneMerge_Deadlock.mp4" type="video/mp4">
-        </video>
-        <video poster="" id="tree2" autoplay controls muted loop>
-          <!-- Second video here -->
-          <source src="static/videos/cropped_LaneMerge_NoDeadlock.mp4" type="video/mp4">
-        </video>
-      </div>
-      <h2 class="subtitle has-text-centered">
-        Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
-      </h2>
-    </div>
-  </div>
-</section>
-<!-- End teaser video -->
-
-<style>
-  .video-container {
-    display: flex;
-    gap: 1rem;
-  }
-  .video-container video {
-    width: 50%;
-    height: auto;
-  }
-
-  /* Optional: Make the videos stack on smaller screens */
-  @media (max-width: 768px) {
-    .video-container {
-      flex-direction: column;
-    }
-    .video-container video {
-      width: 100%;
-    }
-  }
-</style>
-
-
-
-
-
-<section class="section">
-  <div class="container">
-    <h2 class="title is-4 has-text-centered">Results for T-Junction and Lane Merge Scenarios (Dlk indicates Deadlocks)</h2>
-    <table class="table is-bordered is-striped is-fullwidth">
-      <thead>
-        <tr>
-          <th>Exp</th>
-          <th>Metric</th>
-          <th>&lambda; = 0.0</th>
-          <th>&lambda; = 2.5</th>
-          <th>&lambda; = 5.0</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td rowspan="5">T-J</td>
-          <td>Dlk (%)</td>
-          <td>30.0</td>
-          <td><strong>0.0</strong></td>
-          <td><strong>0.0</strong></td>
-        </tr>
-        <tr>
-          <td>Dist (m)</td>
-          <td>30.172</td>
-          <td><strong>51.248</strong></td>
-          <td>47.000</td>
-        </tr>
-        <tr>
-          <td>PE (m²)</td>
-          <td><strong>1.366</strong> <small>&plusmn; 1.126</small></td>
-          <td>2.318 <small>&plusmn; 0.313</small></td>
-          <td>2.507 <small>&plusmn; 0.759</small></td>
-        </tr>
-        <tr>
-          <td>Acc (m/s²)</td>
-          <td>-0.142 <small>&plusmn; 0.238</small></td>
-          <td><strong>0.293</strong> <small>&plusmn; 0.045</small></td>
-          <td>0.287 <small>&plusmn; 0.233</small></td>
-        </tr>
-        <tr>
-          <td>Ang (rad/s)</td>
-          <td>0.0037 <small>&plusmn; 0.0028</small></td>
-          <td><strong>0.0005</strong> <small>&plusmn; 0.0002</small></td>
-          <td>0.0028 <small>&plusmn; 0.0026</small></td>
-        </tr>
-
-        <tr>
-          <td rowspan="5">LM</td>
-          <td>Dlk (%)</td>
-          <td>73.3</td>
-          <td><strong>0.0</strong></td>
-          <td><strong>0.0</strong></td>
-        </tr>
-        <tr>
-          <td>Dist (m)</td>
-          <td>46.878</td>
-          <td><strong>75.800</strong></td>
-          <td>69.909</td>
-        </tr>
-        <tr>
-          <td>PE (m²)</td>
-          <td><strong>2.079</strong> <small>&plusmn; 0.785</small></td>
-          <td>3.513 <small>&plusmn; 0.564</small></td>
-          <td>3.315 <small>&plusmn; 0.760</small></td>
-        </tr>
-        <tr>
-          <td>Acc (m/s²)</td>
-          <td><strong>0.111</strong> <small>&plusmn; 0.092</small></td>
-          <td>0.337 <small>&plusmn; 0.054</small></td>
-          <td>0.317 <small>&plusmn; 0.087</small></td>
-        </tr>
-        <tr>
-          <td>Ang (rad/s)</td>
-          <td>0.0032 <small>&plusmn; 0.0032</small></td>
-          <td>0.0009 <small>&plusmn; 0.0006</small></td>
-          <td><strong>0.0001</strong> <small>&plusmn; 0.0001</small></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-
-
-
-<!-- Teaser video -->
-<section class="hero teaser">
-  <div class="container is-max-desktop">
-    <div class="hero-body">
-      <div class="video-container">
-        <video poster="" id="tree1" autoplay controls muted loop>
-          <!-- First video here -->
-          <source src="static/videos/converted_12_0_7.mp4" type="video/mp4">
-        </video>
-        <video poster="" id="tree2" autoplay controls muted loop>
-          <!-- Second video here -->
-          <source src="static/videos/converted_12_75_6.mp4" type="video/mp4">
-        </video>
-      </div>
-      <h2 class="subtitle has-text-centered">
-        Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
-      </h2>
-    </div>
-  </div>
-</section>
-<!-- End teaser video -->
-
-<style>
-  .video-container {
-    display: flex;
-    gap: 1rem;
-  }
-  .video-container video {
-    width: 50%;
-    height: auto;
-  }
-
-  /* Optional: Make the videos stack on smaller screens */
-  @media (max-width: 768px) {
-    .video-container {
-      flex-direction: column;
-    }
-    .video-container video {
-      width: 100%;
-    }
-  }
-</style>
-
-
-<!-- Teaser video -->
-<section class="hero teaser">
-  <div class="container is-max-desktop">
-    <div class="hero-body">
-      <div class="video-container">
-        <video poster="" id="tree1" autoplay controls muted loop>
-          <!-- First video here -->
-          <source src="static/videos/converted_19_0_3.mp4" type="video/mp4">
-        </video>
-        <video poster="" id="tree2" autoplay controls muted loop>
-          <!-- Second video here -->
-          <source src="static/videos/converted_19_75_2.mp4" type="video/mp4">
-        </video>
-      </div>
-      <h2 class="subtitle has-text-centered">
-        Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
-      </h2>
-    </div>
-  </div>
-</section>
-<!-- End teaser video -->
-
-<style>
-  .video-container {
-    display: flex;
-    gap: 1rem;
-  }
-  .video-container video {
-    width: 50%;
-    height: auto;
-  }
-
-  /* Optional: Make the videos stack on smaller screens */
-  @media (max-width: 768px) {
-    .video-container {
-      flex-direction: column;
-    }
-    .video-container video {
-      width: 100%;
-    }
-  }
-</style>
-
-<!-- Teaser video -->
-<section class="hero teaser">
-  <div class="container is-max-desktop">
-    <div class="hero-body">
-      <div class="video-container">
-        <video poster="" id="tree1" autoplay controls muted loop>
-          <!-- First video here -->
-          <source src="static/videos/converted_54_0_9.mp4" type="video/mp4">
-        </video>
-        <video poster="" id="tree2" autoplay controls muted loop>
-          <!-- Second video here -->
-          <source src="static/videos/converted_54_120_7.mp4" type="video/mp4">
-        </video>
-      </div>
-      <h2 class="subtitle has-text-centered">
-        Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
-      </h2>
-    </div>
-  </div>
-</section>
-<!-- End teaser video -->
-
-<style>
-  .video-container {
-    display: flex;
-    gap: 1rem;
-  }
-  .video-container video {
-    width: 50%;
-    height: auto;
-  }
-
-  /* Optional: Make the videos stack on smaller screens */
-  @media (max-width: 768px) {
-    .video-container {
-      flex-direction: column;
-    }
-    .video-container video {
-      width: 100%;
-    }
-  }
-</style>
-
-<section class="section">
-  <div class="container">
-    <h2 class="title is-4 has-text-centered">Results comparing the performance of an MPPI-based planner on Waymo Open Motion Dataset scenarios for different &lambda; values. For 30 iterations, we present the number of collisions and the mean value of other performance metrics.</h2>
-    <table class="table is-bordered is-striped is-fullwidth">
-      <thead>
-        <tr>
-          <th>Scenario</th>
-          <th>&lambda;</th>
-          <th>Col (%)</th>
-          <th>Dist (m)</th>
-          <th>Acc (m/s²)</th>
-          <th>Lat_Acc (m/s²)</th>
-          <th>L2 (m)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td rowspan="3">Crossing1</td>
-          <td>0</td>
-          <td>43.3</td>
-          <td>74.540 <small>&plusmn; 1.928</small></td>
-          <td>1.085 <small>&plusmn; 0.121</small></td>
-          <td>1.615 <small>&plusmn; 0.578</small></td>
-          <td>4.101 <small>&plusmn; 0.532</small></td>
-        </tr>
-        <tr>
-          <td>75</td>
-          <td>0</td>
-          <td>68.353 <small>&plusmn; 0.982</small></td>
-          <td>0.681 <small>&plusmn; 0.025</small></td>
-          <td>0.412 <small>&plusmn; 0.044</small></td>
-          <td>3.358 <small>&plusmn; 0.221</small></td>
-        </tr>
-        <tr>
-          <td>120</td>
-          <td>0</td>
-          <td>55.796 <small>&plusmn; 1.321</small></td>
-          <td>0.472 <small>&plusmn; 0.035</small></td>
-          <td>0.149 <small>&plusmn; 0.025</small></td>
-          <td>2.554 <small>&plusmn; 0.053</small></td>
-        </tr>
-
-        <tr>
-          <td rowspan="3">Crossing2</td>
-          <td>0</td>
-          <td>86.6</td>
-          <td>75.843 <small>&plusmn; 4.803</small></td>
-          <td>1.418 <small>&plusmn; 0.099</small></td>
-          <td>2.121 <small>&plusmn; 0.295</small></td>
-          <td>12.707 <small>&plusmn; 1.112</small></td>
-        </tr>
-        <tr>
-          <td>75</td>
-          <td>0</td>
-          <td>55.353 <small>&plusmn; 1.403</small></td>
-          <td>0.957 <small>&plusmn; 0.091</small></td>
-          <td>0.314 <small>&plusmn; 0.036</small></td>
-          <td>4.603 <small>&plusmn; 1.246</small></td>
-        </tr>
-        <tr>
-          <td>120</td>
-          <td>23.3</td>
-          <td>37.518 <small>&plusmn; 12.954</small></td>
-          <td>1.534 <small>&plusmn; 0.736</small></td>
-          <td>0.227 <small>&plusmn; 0.084</small></td>
-          <td>2.947 <small>&plusmn; 3.206</small></td>
-        </tr>
-
-        <tr>
-          <td rowspan="3">Intersection</td>
-          <td>0</td>
-          <td>26.6</td>
-          <td>69.747 <small>&plusmn; 4.794</small></td>
-          <td>1.450 <small>&plusmn; 0.153</small></td>
-          <td>1.817 <small>&plusmn; 0.782</small></td>
-          <td>24.808 <small>&plusmn; 3.632</small></td>
-        </tr>
-        <tr>
-          <td>75</td>
-          <td>0</td>
-          <td>72.700 <small>&plusmn; 0.115</small></td>
-          <td>0.709 <small>&plusmn; 0.029</small></td>
-          <td>0.493 <small>&plusmn; 0.075</small></td>
-          <td>24.618 <small>&plusmn; 1.036</small></td>
-        </tr>
-        <tr>
-          <td>120</td>
-          <td>0</td>
-          <td>71.885 <small>&plusmn; 0.227</small></td>
-          <td>0.613 <small>&plusmn; 0.043</small></td>
-          <td>0.304 <small>&plusmn; 0.026</small></td>
-          <td>19.900 <small>&plusmn; 0.733</small></td>
-        </tr>
-
-        <tr>
-          <td rowspan="3">Emergency</td>
-          <td>0</td>
-          <td>53.3</td>
-          <td>61.377 <small>&plusmn; 20.244</small></td>
-          <td>1.258 <small>&plusmn; 0.175</small></td>
-          <td>0.882 <small>&plusmn; 0.141</small></td>
-          <td>8.631 <small>&plusmn; 5.877</small></td>
-        </tr>
-        <tr>
-          <td>75</td>
-          <td>0</td>
-          <td>68.883 <small>&plusmn; 0.525</small></td>
-          <td>0.763 <small>&plusmn; 0.010</small></td>
-          <td>0.365 <small>&plusmn; 0.031</small></td>
-          <td>1.961 <small>&plusmn; 0.069</small></td>
-        </tr>
-        <tr>
-          <td>120</td>
-          <td>0</td>
-          <td>60.058 <small>&plusmn; 0.797</small></td>
-          <td>0.581 <small>&plusmn; 0.019</small></td>
-          <td>0.184 <small>&plusmn; 0.016</small></td>
-          <td>1.515 <small>&plusmn; 0.091</small></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-
-
-<!-- Image carousel -->
-<section class="hero is-small">
-  <div class="hero-body">
-    <div class="container">
-      <div id="results-carousel" class="carousel results-carousel">
-       <div class="item">
-        <!-- Your image here -->
-        <img src="static/images/carousel1.jpg" alt="MY ALT TEXT"/>
-        <h2 class="subtitle has-text-centered">
-          First image description.
-        </h2>
-      </div>
-      <div class="item">
-        <!-- Your image here -->
-        <img src="static/images/carousel2.jpg" alt="MY ALT TEXT"/>
-        <h2 class="subtitle has-text-centered">
-          Second image description.
-        </h2>
-      </div>
-      <div class="item">
-        <!-- Your image here -->
-        <img src="static/images/carousel3.jpg" alt="MY ALT TEXT"/>
-        <h2 class="subtitle has-text-centered">
-         Third image description.
-       </h2>
-     </div>
-     <div class="item">
-      <!-- Your image here -->
-      <img src="static/images/carousel4.jpg" alt="MY ALT TEXT"/>
-      <h2 class="subtitle has-text-centered">
-        Fourth image description.
-      </h2>
-    </div>
-  </div>
-</div>
-</div>
-</section>
-<!-- End image carousel -->
-
-
-
-
-<!-- Youtube video -->
-<section class="hero is-small is-light">
-  <div class="hero-body">
-    <div class="container">
-      <!-- Paper video. -->
-      <h2 class="title is-3">Video Presentation</h2>
-      <div class="columns is-centered has-text-centered">
-        <div class="column is-four-fifths">
-          
-          <div class="publication-video">
-            <!-- Youtube embed code here -->
-            <iframe src="https://www.youtube.com/embed/JkaxUblCGz0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <div id="results-content" style="display: none;">
+      <p class="larger-text">
+        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+      </p>
+        <!-- Image Grid -->
+      <div class="container is-max-desktop">
+        <div class="columns is-multiline is-centered">
+          <div class="column is-one-third has-text-centered">
+            <figure>
+              <img src="static/images/symmetric_lambda0.svg" alt="Image 1" width="100%" height="400px" />
+              <figcaption>Image 1 caption</figcaption>
+            </figure>
+          </div>
+          <div class="column is-one-third has-text-centered">
+            <figure>
+              <img src="static/images/asymmetric_lambda0.svg" alt="Image 2" width="100%" height="400px" />
+              <figcaption>Image 2 caption</figcaption>
+            </figure>
+          </div>
+          <div class="column is-one-third has-text-centered">
+            <figure>
+              <img src="static/images/double_crossing_lambda0.svg" alt="Image 3" width="100%" height="400px" />
+              <figcaption>Image 3 caption</figcaption>
+            </figure>
+          </div>
+          <div class="column is-one-third has-text-centered">
+            <figure>
+              <img src="static/images/symmetric_lambda5.svg" alt="Image 4" width="100%" height="400px" />
+              <figcaption>Image 4 caption</figcaption>
+            </figure>
+          </div>
+          <div class="column is-one-third has-text-centered">
+            <figure>
+              <img src="static/images/asymmetric_lambda5.svg" alt="Image 5" width="100%" height="400px" />
+              <figcaption>Image 5 caption</figcaption>
+            </figure>
+          </div>
+          <div class="column is-one-third has-text-centered">
+            <figure>
+              <img src="static/images/double_crossing_lambda5.svg" alt="Image 6" width="100%" height="400px" />
+              <figcaption>Image 6 caption</figcaption>
+            </figure>
           </div>
         </div>
+        <div class="has-text-centered">
+          <p>Common caption for all figures</p>
+        </div>
       </div>
+      <p class="larger-text">
+        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+      </p>
+      <!-- Table -->
+      <div class="container">
+        <h2 class="title is-4 has-text-centered">Table summarizing results for the 3 swapping tasks: Symmetrical, Unsymmetrical, and Double-Crossing</h2>
+        <table class="table is-bordered is-striped is-fullwidth">
+          <thead>
+            <tr>
+              <th>Exp.</th>
+              <th>Metric</th>
+              <th>&lambda; = 0.0</th>
+              <th>&lambda; = 2.5</th>
+              <th>&lambda; = 5.0</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="3">Sym</td>
+              <td>PE (m²)</td>
+              <td>2.116 <small>&plusmn; 1.000</small></td>
+              <td>0.516 <small>&plusmn; 0.161</small></td>
+              <td><strong>0.501</strong> <small>&plusmn; <strong>0.145</strong></small></td>
+            </tr>
+            <tr>
+              <td>Acc (m/s²)</td>
+              <td>0.209 <small>&plusmn; 0.101</small></td>
+              <td><strong>0.038</strong> <small>&plusmn; <strong>0.008</strong></small></td>
+              <td>0.043 <small>&plusmn; 0.009</small></td>
+            </tr>
+            <tr>
+              <td>Ang (rad/s)</td>
+              <td>0.283 <small>&plusmn; 0.041</small></td>
+              <td>0.225 <small>&plusmn; 0.026</small></td>
+              <td><strong>0.219</strong> <small>&plusmn; <strong>0.026</strong></small></td>
+            </tr>
+            
+            <tr>
+              <td rowspan="3">Unsym</td>
+              <td>PE (m²)</td>
+              <td>0.877 <small>&plusmn; 0.489</small></td>
+              <td>0.291 <small>&plusmn; 0.178</small></td>
+              <td><strong>0.187</strong> <small>&plusmn; <strong>0.162</strong></small></td>
+            </tr>
+            <tr>
+              <td>Acc (m/s²)</td>
+              <td>0.196 <small>&plusmn; 0.114</small></td>
+              <td>0.138 <small>&plusmn; 0.090</small></td>
+              <td><strong>0.112</strong> <small>&plusmn; <strong>0.080</strong></small></td>
+            </tr>
+            <tr>
+              <td>Ang (rad/s)</td>
+              <td>0.363 <small>&plusmn; 0.112</small></td>
+              <td>0.221 <small>&plusmn; 0.095</small></td>
+              <td><strong>0.177</strong> <small>&plusmn; <strong>0.071</strong></small></td>
+            </tr>
+
+            <tr>
+              <td rowspan="3">D-Cross</td>
+              <td>PE (m²)</td>
+              <td>0.969 <small>&plusmn; 0.416</small></td>
+              <td>0.388 <small>&plusmn; 0.124</small></td>
+              <td><strong>0.311</strong> <small>&plusmn; <strong>0.116</strong></small></td>
+            </tr>
+            <tr>
+              <td>Acc (m/s²)</td>
+              <td>0.249 <small>&plusmn; 0.124</small></td>
+              <td><strong>0.123</strong> <small>&plusmn; <strong>0.080</strong></small></td>
+              <td>0.125 <small>&plusmn; 0.070</small></td>
+            </tr>
+            <tr>
+              <td>Ang (rad/s)</td>
+              <td>0.434 <small>&plusmn; 0.128</small></td>
+              <td>0.283 <small>&plusmn; 0.096</small></td>
+              <td><strong>0.252</strong> <small>&plusmn; <strong>0.078</strong></small></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="larger-text">
+        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+      </p>
     </div>
   </div>
 </section>
-<!-- End youtube video -->
+
+<style>
+  .toggle-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  .toggle-header:hover {
+    color: #007bff;
+  }
+</style>
+
+<script>
+  function toggleResultsContent() {
+    const content = document.getElementById("results-content");
+    const arrow = document.getElementById("results-toggle-arrow");
+    if (content.style.display === "none") {
+      content.style.display = "block";
+      arrow.innerHTML = "&#9660;"; // Down arrow
+    } else {
+      content.style.display = "none";
+      arrow.innerHTML = "&#9654;"; // Right arrow
+    }
+  }
+</script>
 
 
-<!-- Video carousel -->
-<section class="hero is-small">
-  <div class="hero-body">
-    <div class="container">
-      <h2 class="title is-3">Another Carousel</h2>
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-video1">
-          <video poster="" id="video1" autoplay controls muted loop height="100%">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel1.mp4"
-            type="video/mp4">
-          </video>
+<!-- Collapsible Section for T-Junction and Lane Merge Results -->
+<section class="section">
+  <div class="container">
+    <div class="toggle-header" onclick="toggleTJunctionLaneMergeContent()">
+      <span id="tjunction-lanemerge-toggle-arrow" style="font-size: 1.5em; margin-left: 10px;">&#9654;</span>
+      <h2 style="display: inline; font-size: 1.5em;"><strong>Robot-Robot Traffic Experiments</strong></h2>
+    </div>
+    <div id="tjunction-lanemerge-content" style="display: none;">
+      <p class="larger-text">
+        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+      </p>
+      <!-- Teaser videos for T-Junction and MPPI Deadlock Avoidance -->
+      <section class="hero teaser">
+        <div class="container is-max-desktop">
+          <div class="hero-body">
+            <div class="video-container">
+              <video poster="" id="tree1" autoplay controls muted loop>
+                <source src="static/videos/cropped_T_Junction_Deadlock.mp4" type="video/mp4">
+              </video>
+              <video poster="" id="tree2" autoplay controls muted loop>
+                <source src="static/videos/cropped_MPPI_Deadlock_Avoid.mp4" type="video/mp4">
+              </video>
+            </div>
+            <h2 class="subtitle has-text-centered">
+              Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
+            </h2>
+          </div>
         </div>
-        <div class="item item-video2">
-          <video poster="" id="video2" autoplay controls muted loop height="100%">
-            <!-- Your video file here -->
-            <source src="static/videos/carousel2.mp4"
-            type="video/mp4">
-          </video>
+      </section>
+
+      <!-- Teaser videos for Lane Merge scenarios -->
+      <section class="hero teaser">
+        <div class="container is-max-desktop">
+          <div class="hero-body">
+            <div class="video-container">
+              <video poster="" id="tree1" autoplay controls muted loop>
+                <source src="static/videos/cropped_LaneMerge_Deadlock.mp4" type="video/mp4">
+              </video>
+              <video poster="" id="tree2" autoplay controls muted loop>
+                <source src="static/videos/cropped_LaneMerge_NoDeadlock.mp4" type="video/mp4">
+              </video>
+            </div>
+            <h2 class="subtitle has-text-centered">
+              Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
+            </h2>
+          </div>
         </div>
-        <div class="item item-video3">
-          <video poster="" id="video3" autoplay controls muted loop height="100%">\
-            <!-- Your video file here -->
-            <source src="static/videos/carousel3.mp4"
-            type="video/mp4">
-          </video>
-        </div>
+      </section>
+      <p class="larger-text">
+        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+      </p>
+      <!-- Results Table for T-Junction and Lane Merge Scenarios -->
+      <div class="container">
+        <h2 class="title is-4 has-text-centered">Results for T-Junction and Lane Merge Scenarios (Dlk indicates Deadlocks)</h2>
+        <table class="table is-bordered is-striped is-fullwidth">
+          <thead>
+            <tr>
+              <th>Exp</th>
+              <th>Metric</th>
+              <th>&lambda; = 0.0</th>
+              <th>&lambda; = 2.5</th>
+              <th>&lambda; = 5.0</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="5">T-J</td>
+              <td>Dlk (%)</td>
+              <td>30.0</td>
+              <td><strong>0.0</strong></td>
+              <td><strong>0.0</strong></td>
+            </tr>
+            <tr>
+              <td>Dist (m)</td>
+              <td>30.172</td>
+              <td><strong>51.248</strong></td>
+              <td>47.000</td>
+            </tr>
+            <tr>
+              <td>PE (m²)</td>
+              <td><strong>1.366</strong> <small>&plusmn; 1.126</small></td>
+              <td>2.318 <small>&plusmn; 0.313</small></td>
+              <td>2.507 <small>&plusmn; 0.759</small></td>
+            </tr>
+            <tr>
+              <td>Acc (m/s²)</td>
+              <td>-0.142 <small>&plusmn; 0.238</small></td>
+              <td><strong>0.293</strong> <small>&plusmn; 0.045</small></td>
+              <td>0.287 <small>&plusmn; 0.233</small></td>
+            </tr>
+            <tr>
+              <td>Ang (rad/s)</td>
+              <td>0.0037 <small>&plusmn; 0.0028</small></td>
+              <td><strong>0.0005</strong> <small>&plusmn; 0.0002</small></td>
+              <td>0.0028 <small>&plusmn; 0.0026</small></td>
+            </tr>
+
+            <tr>
+              <td rowspan="5">LM</td>
+              <td>Dlk (%)</td>
+              <td>73.3</td>
+              <td><strong>0.0</strong></td>
+              <td><strong>0.0</strong></td>
+            </tr>
+            <tr>
+              <td>Dist (m)</td>
+              <td>46.878</td>
+              <td><strong>75.800</strong></td>
+              <td>69.909</td>
+            </tr>
+            <tr>
+              <td>PE (m²)</td>
+              <td><strong>2.079</strong> <small>&plusmn; 0.785</small></td>
+              <td>3.513 <small>&plusmn; 0.564</small></td>
+              <td>3.315 <small>&plusmn; 0.760</small></td>
+            </tr>
+            <tr>
+              <td>Acc (m/s²)</td>
+              <td><strong>0.111</strong> <small>&plusmn; 0.092</small></td>
+              <td>0.337 <small>&plusmn; 0.054</small></td>
+              <td>0.317 <small>&plusmn; 0.087</small></td>
+            </tr>
+            <tr>
+              <td>Ang (rad/s)</td>
+              <td>0.0032 <small>&plusmn; 0.0032</small></td>
+              <td>0.0009 <small>&plusmn; 0.0006</small></td>
+              <td><strong>0.0001</strong> <small>&plusmn; 0.0001</small></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+      <p class="larger-text">
+        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+      </p>
     </div>
   </div>
 </section>
-<!-- End video carousel -->
+
+<style>
+  .toggle-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  .toggle-header:hover {
+    color: #007bff;
+  }
+  .video-container {
+    display: flex;
+    gap: 1rem;
+  }
+  .video-container video {
+    width: 50%;
+    height: auto;
+  }
+  /* Stack videos on smaller screens */
+  @media (max-width: 768px) {
+    .video-container {
+      flex-direction: column;
+    }
+    .video-container video {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  function toggleTJunctionLaneMergeContent() {
+    const content = document.getElementById("tjunction-lanemerge-content");
+    const arrow = document.getElementById("tjunction-lanemerge-toggle-arrow");
+    if (content.style.display === "none") {
+      content.style.display = "block";
+      arrow.innerHTML = "&#9660;"; // Down arrow
+    } else {
+      content.style.display = "none";
+      arrow.innerHTML = "&#9654;"; // Right arrow
+    }
+  }
+</script>
+
+
+<!-- Collapsible Section for Performance Results on Scenarios -->
+<section class="section">
+  <div class="container">
+    <div class="toggle-header" onclick="togglePerformanceResultsContent()">
+      <span id="performance-toggle-arrow" style="font-size: 1.5em; margin-left: 10px;">&#9654;</span>
+      <h2 style="display: inline; font-size: 1.5em;"><strong>Experiments with Human Driver Data</strong></h2>
+    </div>
+    <div id="performance-results-content" style="display: none;">
+      <p class="larger-text">
+        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+      </p>
+      <!-- Teaser videos for Scenario 1 -->
+      <section class="hero teaser">
+        <div class="container is-max-desktop">
+          <div class="hero-body">
+            <div class="video-container">
+              <video poster="" id="tree1" autoplay controls muted loop>
+                <source src="static/videos/converted_12_0_7.mp4" type="video/mp4">
+              </video>
+              <video poster="" id="tree2" autoplay controls muted loop>
+                <source src="static/videos/converted_12_75_6.mp4" type="video/mp4">
+              </video>
+            </div>
+            <h2 class="subtitle has-text-centered">
+              Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
+            </h2>
+          </div>
+        </div>
+      </section>
+
+      <!-- Teaser videos for Scenario 2 -->
+      <section class="hero teaser">
+        <div class="container is-max-desktop">
+          <div class="hero-body">
+            <div class="video-container">
+              <video poster="" id="tree1" autoplay controls muted loop>
+                <source src="static/videos/converted_19_0_3.mp4" type="video/mp4">
+              </video>
+              <video poster="" id="tree2" autoplay controls muted loop>
+                <source src="static/videos/converted_19_75_2.mp4" type="video/mp4">
+              </video>
+            </div>
+            <h2 class="subtitle has-text-centered">
+              Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
+            </h2>
+          </div>
+        </div>
+      </section>
+
+      <!-- Teaser videos for Scenario 3 -->
+      <section class="hero teaser">
+        <div class="container is-max-desktop">
+          <div class="hero-body">
+            <div class="video-container">
+              <video poster="" id="tree1" autoplay controls muted loop>
+                <source src="static/videos/converted_54_0_9.mp4" type="video/mp4">
+              </video>
+              <video poster="" id="tree2" autoplay controls muted loop>
+                <source src="static/videos/converted_54_120_7.mp4" type="video/mp4">
+              </video>
+            </div>
+            <h2 class="subtitle has-text-centered">
+              Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
+            </h2>
+          </div>
+        </div>
+      </section>
+      <p class="larger-text">
+        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+      </p>
+      <!-- Results Table for Performance Comparison -->
+      <div class="container">
+        <h2 class="title is-4 has-text-centered">Results comparing the performance of an MPPI-based planner on Waymo Open Motion Dataset scenarios for different &lambda; values. For 30 iterations, we present the number of collisions and the mean value of other performance metrics.</h2>
+        <table class="table is-bordered is-striped is-fullwidth">
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>&lambda;</th>
+              <th>Col (%)</th>
+              <th>Dist (m)</th>
+              <th>Acc (m/s²)</th>
+              <th>Lat_Acc (m/s²)</th>
+              <th>L2 (m)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="3">Crossing1</td>
+              <td>0</td>
+              <td>43.3</td>
+              <td>74.540 <small>&plusmn; 1.928</small></td>
+              <td>1.085 <small>&plusmn; 0.121</small></td>
+              <td>1.615 <small>&plusmn; 0.578</small></td>
+              <td>4.101 <small>&plusmn; 0.532</small></td>
+            </tr>
+            <tr>
+              <td>75</td>
+              <td>0</td>
+              <td>68.353 <small>&plusmn; 0.982</small></td>
+              <td>0.681 <small>&plusmn; 0.025</small></td>
+              <td>0.412 <small>&plusmn; 0.044</small></td>
+              <td>3.358 <small>&plusmn; 0.221</small></td>
+            </tr>
+            <tr>
+              <td>120</td>
+              <td>0</td>
+              <td>55.796 <small>&plusmn; 1.321</small></td>
+              <td>0.472 <small>&plusmn; 0.035</small></td>
+              <td>0.149 <small>&plusmn; 0.025</small></td>
+              <td>2.554 <small>&plusmn; 0.053</small></td>
+            </tr>
+
+            <tr>
+              <td rowspan="3">Crossing2</td>
+              <td>0</td>
+              <td>86.6</td>
+              <td>75.843 <small>&plusmn; 4.803</small></td>
+              <td>1.418 <small>&plusmn; 0.099</small></td>
+              <td>2.121 <small>&plusmn; 0.295</small></td>
+              <td>12.707 <small>&plusmn; 1.112</small></td>
+            </tr>
+            <tr>
+              <td>75</td>
+              <td>0</td>
+              <td>55.353 <small>&plusmn; 1.403</small></td>
+              <td>0.957 <small>&plusmn; 0.091</small></td>
+              <td>0.314 <small>&plusmn; 0.036</small></td>
+              <td>4.603 <small>&plusmn; 1.246</small></td>
+            </tr>
+            <tr>
+              <td>120</td>
+              <td>23.3</td>
+              <td>37.518 <small>&plusmn; 12.954</small></td>
+              <td>1.534 <small>&plusmn; 0.736</small></td>
+              <td>0.227 <small>&plusmn; 0.084</small></td>
+              <td>2.947 <small>&plusmn; 3.206</small></td>
+            </tr>
+
+            <tr>
+              <td rowspan="3">Intersection</td>
+              <td>0</td>
+              <td>26.6</td>
+              <td>69.747 <small>&plusmn; 4.794</small></td>
+              <td>1.450 <small>&plusmn; 0.153</small></td>
+              <td>1.817 <small>&plusmn; 0.782</small></td>
+              <td>24.808 <small>&plusmn; 3.632</small></td>
+            </tr>
+            <tr>
+              <td>75</td>
+              <td>0</td>
+              <td>72.700 <small>&plusmn; 0.115</small></td>
+              <td>0.709 <small>&plusmn; 0.029</small></td>
+              <td>0.493 <small>&plusmn; 0.075</small></td>
+              <td>24.618 <small>&plusmn; 1.036</small></td>
+            </tr>
+            <tr>
+              <td>120</td>
+              <td>0</td>
+              <td>71.885 <small>&plusmn; 0.227</small></td>
+              <td>0.613 <small>&plusmn; 0.043</small></td>
+              <td>0.304 <small>&plusmn; 0.026</small></td>
+              <td>19.900 <small>&plusmn; 0.733</small></td>
+            </tr>
+
+            <tr>
+              <td rowspan="3">Emergency</td>
+              <td>0</td>
+              <td>53.3</td>
+              <td>61.377 <small>&plusmn; 20.244</small></td>
+              <td>1.258 <small>&plusmn; 0.175</small></td>
+              <td>0.882 <small>&plusmn; 0.141</small></td>
+              <td>8.631 <small>&plusmn; 5.877</small></td>
+            </tr>
+            <tr>
+              <td>75</td>
+              <td>0</td>
+              <td>68.883 <small>&plusmn; 0.525</small></td>
+              <td>0.763 <small>&plusmn; 0.010</small></td>
+              <td>0.365 <small>&plusmn; 0.031</small></td>
+              <td>1.961 <small>&plusmn; 0.069</small></td>
+            </tr>
+            <tr>
+              <td>120</td>
+              <td>0</td>
+              <td>60.058 <small>&plusmn; 0.797</small></td>
+              <td>0.581 <small>&plusmn; 0.019</small></td>
+              <td>0.184 <small>&plusmn; 0.016</small></td>
+              <td>1.515 <small>&plusmn; 0.091</small></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="larger-text">
+        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .toggle-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  .toggle-header:hover {
+    color: #007bff;
+  }
+  .video-container {
+    display: flex;
+    gap: 1rem;
+  }
+  .video-container video {
+    width: 50%;
+    height: auto;
+  }
+  /* Stack videos on smaller screens */
+  @media (max-width: 768px) {
+    .video-container {
+      flex-direction: column;
+    }
+    .video-container video {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  function togglePerformanceResultsContent() {
+    const content = document.getElementById("performance-results-content");
+    const arrow = document.getElementById("performance-toggle-arrow");
+    if (content.style.display === "none") {
+      content.style.display = "block";
+      arrow.innerHTML = "&#9660;"; // Down arrow
+    } else {
+      content.style.display = "none";
+      arrow.innerHTML = "&#9654;"; // Right arrow
+    }
+  }
+</script>
 
 
 
