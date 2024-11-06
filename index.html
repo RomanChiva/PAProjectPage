@@ -286,10 +286,10 @@ when only the ego-agent uses this strategy.
       <p style="margin-bottom: 20px;">
         The free energy function can be interpreted as measuing how effectively a prediction distribution \( P \) minimizes cost. 
         Under this interpretation, to minimize the free energy an agent would behave so as to push the prediction distribution toward the 
-        optimal trajectory so as to minimize the expected cost \( \mathbb{E}_{\mathbf{x} \sim P} [S(\mathbf{x})] \) of trajectories sampled from the distribution.
+        optimal trajectory thereby minimizing the expected cost \( \mathbb{E}_{\mathbf{x} \sim P} [S(\mathbf{x})] \) of trajectories sampled from the distribution.
       </p>
       <p style="margin-bottom: 20px;">
-        Applying Jensen's inequality, this free energy function can be bounded and simplified as follows:
+        By performin an expectation switch to include the agents plan distribution \( p(\mathbf{x}) \) and ppplying Jensen's inequality, this free energy function can be bounded and simplified as follows:
       </p>
       <div style="margin-bottom: 20px;">
         \[
@@ -297,7 +297,7 @@ when only the ego-agent uses this strategy.
         \]
       </div>
       <p style="margin-bottom: 20px;">
-        where \( \text{KL} \) denotes the Kullback-Leibler divergence between the agent’s distribution \( q(\mathbf{x}) \) and the predicted distribution \( p(\mathbf{x}) \). This formulation provides a cost function with two main components:
+        where \( \text{KL} \) denotes the Kullback-Leibler divergence between the agent’s plan distribution \( q(\mathbf{x}) \) and the predicted distribution \( p(\mathbf{x}) \). This formulation provides a cost function with two main components:
       </p>
       <ol style="margin-left: 20px; margin-bottom: 30px; font-size: 1.1em;">
         <li><strong>Performance Cost</strong>: Encourages goal-oriented behavior.</li>
@@ -312,10 +312,11 @@ when only the ego-agent uses this strategy.
         \]
       </div>
       <p style="margin-bottom: 30px;">
-        where \( \lambda \) adjusts the weight assigned to predictability.
+        where \( J_k(\mathbf{x}_k) \) represents the performance cost together with some control cost and \( \lambda \) adjusts the weight assigned to predictability.
+        This cost function serves as an upper bound to the free energy, thus minimizing the cost function also minimizes the free energy.
       </p>
 
-      <!-- Planner Implementation -->
+      <!-- Planner Implementation
       <h3 style="font-size: 1.3em; margin-top: 30px; margin-bottom: 15px;"><strong>Planner Implementation</strong></h3>
       <p style="margin-bottom: 20px;">
         For practical implementation, the Model Predictive Path Integral (MPPI) control method is used, allowing sampling-based trajectory optimization. MPPI computes an optimal control sequence \( \mathbf{U}^* \) as a weighted sum of sampled trajectories, each evaluated by the cost function:
@@ -346,7 +347,7 @@ when only the ego-agent uses this strategy.
       </p>
       <p style="margin-bottom: 40px;">
         This approach allows agents to plan trajectories that balance progress towards goals and predictability, fostering smoother and more coordinated multi-agent interactions.
-      </p>
+      </p> -->
     </div>
   </div>
 </section>
@@ -388,7 +389,28 @@ when only the ego-agent uses this strategy.
         we observe that increasing the predictability score 𝜆 results in trajectories that
         are more compliant with the observer’s expectation.</figcaption>
       <p class="larger-text">
-        Text here
+        In this experiment, we present a single agent interacting with a hand-crafted multi-modal prediction
+model, serving as a model of an observer’s expectation with a mistaken initial belief distribution. We use this example to study how 𝜆 should
+be tuned to control the trade-off. If predictability dominates (e.g.,
+𝜆 = 20 or 𝜆 = 40), this results in observations that further reinforce
+the observer’s mistaken belief. It becomes more costly for the robot
+to pursue its intrinsic motivation with each time-step, thus it fails
+to complete the task. Conversely, if 𝜆 is too low, the robot may still
+behave unpredictably . 
+      </p>
+      <p class="larger-text">
+        For reference, the resulting behavior of an agent optimizing for legibility are shown
+as the black lines. From the perspective of coor-
+dination, legibility can be understood as an anticipatory mechanism: By
+conveying intention in advance, other agents anticipate better in
+their planning resulting n a more predictable environment from their perspective. Our approach similarly mitigates sudden environmental changes, however instead of aiming to directly influence
+the other agents’ beliefs, we rely on a prediction model to avoid
+the surprising observations throughout the interaction. While this
+can occasionally result in slightly more costly trajectories for the
+agent, we achieve a similar outcome without requiring explicit modeling of the other agent, making it more computationally efficient
+and robust to situations where the agent may not be able to successfully convey its intention. As demonstrated in Figure 1, when
+the observer’s beliefs are misaligned, the agent adopts a pro-social
+behavior, gently guiding the observer toward the correct belief. 
       </p>
     </div>
   </div>
@@ -477,6 +499,14 @@ when only the ego-agent uses this strategy.
     <div id="results-content" style="display: none;">
       <p class="larger-text">
         The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+        The optimal solution
+requires all agents to coordinate by selecting the same collision
+avoidance strategy, either passing left or right. Additionally, two
+more scenarios were tested: an asymmetrical swapping task and
+a double-crossing task, to explore different geometries and interactions. The experiments use a game-theoretic prediction model
+based on the ALGAMES framework [11], which solves constrained
+dynamic games to find an optimal joint strategy over a 20-step
+horizon 
       </p>
         <!-- Image Grid -->
       <div class="container is-max-desktop">
@@ -523,7 +553,10 @@ when only the ego-agent uses this strategy.
         </div>
       </div>
       <p class="larger-text">
-        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+        From the perspective of an agent,
+accounting for predictability results in more accurate predictions, allowing for smoother
+and more efficient coordination. This mechanism is especially effective for interactions where the main coordination challenge lies
+in equilibrium selection
       </p>
       <!-- Table -->
       <div class="container">
@@ -602,7 +635,18 @@ when only the ego-agent uses this strategy.
         </table>
       </div>
       <p class="larger-text">
-        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+        As seen in the table, increasing 𝜆 consistently led to improved performance
+across all metrics: planning effort (PE), acceleration (Acc), and an-
+gular velocity (Ang). Notably, even selecting a small 𝜆 causes a
+pronounced decrease in planning effort, with further increases in 𝜆
+yielding diminishing returns. This phenomenon can be attributed to
+the coordination challenge agents face in this environment, which
+primarily involves equilibrium selection. In situations where agents
+must choose between two equally viable strategies, such as passing
+left or passing right, our method addresses this challenge by relying
+on a prediction model to establish a ‘soft social convention’. This
+introduces a subtle bias towards one of the strategies, improving
+implicit coordination.
       </p>
     </div>
   </div>
@@ -648,7 +692,11 @@ when only the ego-agent uses this strategy.
     </div>
     <div id="tjunction-lanemerge-content" style="display: none;">
       <p class="larger-text">
-        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+        In this experiment, we focus on robot-robot coordination in driving scenarios, where the environment
+has a stronger influence on agent’s behavior. We use CommonRoad [1] as a simulator, which includes
+the Wale-Net [17] prediction model, a learning-based model that
+outputs predictions as Gaussians, accounting for uncertainty, road
+geometry, and the interaction with surrounding agents.
       </p>
       <!-- Teaser videos for T-Junction and MPPI Deadlock Avoidance -->
       <section class="hero teaser">
