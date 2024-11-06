@@ -514,42 +514,42 @@ horizon
           <div class="column is-one-third has-text-centered">
             <figure>
               <img src="static/images/symmetric_lambda0.svg" alt="Image 1" width="100%" height="400px" />
-              <figcaption>Image 1 caption</figcaption>
+              <figcaption>𝜆 = 0</figcaption>
             </figure>
           </div>
           <div class="column is-one-third has-text-centered">
             <figure>
               <img src="static/images/asymmetric_lambda0.svg" alt="Image 2" width="100%" height="400px" />
-              <figcaption>Image 2 caption</figcaption>
+              <figcaption>𝜆 = 0</figcaption>
             </figure>
           </div>
           <div class="column is-one-third has-text-centered">
             <figure>
               <img src="static/images/double_crossing_lambda0.svg" alt="Image 3" width="100%" height="400px" />
-              <figcaption>Image 3 caption</figcaption>
+              <figcaption>𝜆 = 0</figcaption>
             </figure>
           </div>
           <div class="column is-one-third has-text-centered">
             <figure>
               <img src="static/images/symmetric_lambda5.svg" alt="Image 4" width="100%" height="400px" />
-              <figcaption>Image 4 caption</figcaption>
+              <figcaption>𝜆 = 0</figcaption>
             </figure>
           </div>
           <div class="column is-one-third has-text-centered">
             <figure>
               <img src="static/images/asymmetric_lambda5.svg" alt="Image 5" width="100%" height="400px" />
-              <figcaption>Image 5 caption</figcaption>
+              <figcaption>𝜆 = 0</figcaption>
             </figure>
           </div>
           <div class="column is-one-third has-text-centered">
             <figure>
               <img src="static/images/double_crossing_lambda5.svg" alt="Image 6" width="100%" height="400px" />
-              <figcaption>Image 6 caption</figcaption>
+              <figcaption>𝜆 = 0</figcaption>
             </figure>
           </div>
         </div>
         <div class="has-text-centered">
-          <p>Common caption for all figures</p>
+          <p>3 swapping task problems: Symmetric (left), Unsymmetrical (Center), Double-Crossing(Right)</p>
         </div>
       </div>
       <p class="larger-text">
@@ -711,7 +711,7 @@ geometry, and the interaction with surrounding agents.
               </video>
             </div>
             <h2 class="subtitle has-text-centered">
-              Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
+             T-Junction Scenario. 𝜆=0 (Left), 𝜆=5 (Right)
             </h2>
           </div>
         </div>
@@ -730,13 +730,22 @@ geometry, and the interaction with surrounding agents.
               </video>
             </div>
             <h2 class="subtitle has-text-centered">
-              Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
+              Lane Merge Scenario. 𝜆=0 (Left), 𝜆=5 (Right)
             </h2>
           </div>
         </div>
       </section>
       <p class="larger-text">
-        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+        When agents fail to coordinate in road
+scenarios, they often experience deadlocks or, in the worst case,
+collisions. Deadlocks are common in limited space environments such as intersections or narrow passages. Initially, the model may predict one agent
+will yield while the other advances. However, as deviations occur
+and both agents hesitate, their predictions begin to reinforce each
+other’s hesitation, creating the deadlock. The model may then be
+unable to introduce asymmetry to prioritize one of the agents in ambiguous situations, preventing the agents from breaking away from the deadlock. Results show that agents incorporating predictability
+into their models achieve better coordination, as indicated by less
+pronounced slowdowns resulting in higher travelled distance and
+the disappearance of deadlocks as seen in the table below.
       </p>
       <!-- Results Table for T-Junction and Lane Merge Scenarios -->
       <div class="container">
@@ -819,7 +828,17 @@ geometry, and the interaction with surrounding agents.
         </table>
       </div>
       <p class="larger-text">
-        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+        A noteworthy observation is that, beyond reducing uncertainty,
+        agents enhance their performance by adopting pro-social behaviors
+        embedded in the model’s latent space. These behaviors include
+        adherence to social norms and subtle cues learned from training
+        data, mirroring the behavior of experts used to train the model.
+        This behavior resembles imitation learning, where agents learn
+        cooperative strategies directly from expert demonstrations embed-
+        ded in the prediction model. As seen in the lane merge videos for example, although both
+        outcomes are equally plausible from the raw planning problem,
+        agents consistently converge on the solution where the merging
+        agent yields, which aligns with typical human driving patterns.
       </p>
     </div>
   </div>
@@ -882,7 +901,13 @@ geometry, and the interaction with surrounding agents.
     </div>
     <div id="performance-results-content" style="display: none;">
       <p class="larger-text">
-        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+        The goal of this experiment is to evaluate whether predictability can bridge the gap between algorithmic
+planning and the natural driving patterns observed in humans,
+facilitating smoother and more adaptive interactions in complex
+driving environments. We utilize a state-of-the-art (SOTA) prediction model and a standard MPPI reference-tracking planner. For this experiment, we
+replay recorded scenes from the Waymo dataset’s test set, meaning
+agents in the environment follow pre-recorded, non-interactive
+trajectories. The goal is for the ego agent to replicate expert behavior observed during training.
       </p>
       <!-- Teaser videos for Scenario 1 -->
       <section class="hero teaser">
@@ -897,7 +922,7 @@ geometry, and the interaction with surrounding agents.
               </video>
             </div>
             <h2 class="subtitle has-text-centered">
-              Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
+              Crossing 1 Scenario. 𝜆=0 (Left), 𝜆=75 (Right)
             </h2>
           </div>
         </div>
@@ -916,7 +941,7 @@ geometry, and the interaction with surrounding agents.
               </video>
             </div>
             <h2 class="subtitle has-text-centered">
-              Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
+              Crossing 2 Scenario. 𝜆=0 (Left), 𝜆=75 (Right)
             </h2>
           </div>
         </div>
@@ -935,14 +960,11 @@ geometry, and the interaction with surrounding agents.
               </video>
             </div>
             <h2 class="subtitle has-text-centered">
-              Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus.
+              Intersection Scenario. 𝜆=0 (Left), 𝜆=75 (Right)
             </h2>
           </div>
         </div>
       </section>
-      <p class="larger-text">
-        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
-      </p>
       <!-- Results Table for Performance Comparison -->
       <div class="container">
         <h2 class="title is-4 has-text-centered">Results comparing the performance of an MPPI-based planner on Waymo Open Motion Dataset scenarios for different &lambda; values. For 30 iterations, we present the number of collisions and the mean value of other performance metrics.</h2>
@@ -1066,7 +1088,27 @@ geometry, and the interaction with surrounding agents.
         </table>
       </div>
       <p class="larger-text">
-        The results of the swapping tasks are presented in the following sections, including visualizations and a summary table of the performance metrics for different values of the predictability score \( \lambda \).
+        From Table 3, it is evident that increasing
+the weight of the predictability objective results in fewer collisions
+and smoother control inputs. Interestingly, however, this does not
+necessarily correlate with improved progress along the reference
+path. This can be attributed to the planner inducing less distributional shift in the prediction model. The model, trained on scenes
+where all agents exhibit expert behaviors, struggles when the planner deviates significantly from these patterns, as it encounters
+situations outside its training distribution. In such cases, the model
+attempts to extrapolate and produces sub-optimal predictions, such
+as incorrectly anticipating that an agent may yield or maneuver
+differently than it actually does based on the recorded data. This
+misalignment leads to overconfident behavior in some instances,
+which, while promoting progress along the reference path, increases
+the risk of collisions. Evidence supporting this hypothesis is found
+in the Human L2 loss metric, which measures the L2 loss between
+the agent’s trajectory and the corresponding human trajectory that
+the planner aims to replicate. For 𝜆 = 0, the higher L2 loss indicates significant deviation from human behavior, suggesting that
+the agent diverges more from the expert’s trajectory. In contrast,
+when predictability is considered, the L2 loss decreases, indicating
+that the agent’s behavior aligns more closely with the human data.
+This results in reduced distributional shift and, consequently, more
+accurate predictions and smoother trajectories.
       </p>
     </div>
   </div>
@@ -1124,12 +1166,7 @@ geometry, and the interaction with surrounding agents.
 
 
 <!--BibTex citation -->
-  <section class="section" id="BibTeX">
-    <div class="container is-max-desktop content">
-      <h2 class="title">BibTeX</h2>
-      <pre><code>BibTex Code Here</code></pre>
-    </div>
-</section>
+
 <!--End BibTex citation -->
 
 
